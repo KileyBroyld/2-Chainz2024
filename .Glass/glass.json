@@ -1,18 +1,5 @@
 {
   "NetworkTables": {
-    "retained": {
-      "SmartDashboard": {
-        "open": true
-      }
-    },
-    "transitory": {
-      "LiveWindow": {
-        "open": true
-      },
-      "SmartDashboard": {
-        "open": true
-      }
-    },
     "types": {
       "/FMSInfo": "FMSInfo",
       "/SmartDashboard/Field": "Field2d"
@@ -24,16 +11,12 @@
         }
       },
       "/SmartDashboard/Field": {
-        "Robot": {
-          "style": "Track"
-        },
         "bottom": 544,
         "builtin": "2024 Crescendo",
         "height": 8.013679504394531,
         "left": 46,
         "right": 1088,
         "top": 36,
-        "units": "feet",
         "width": 16.541748046875,
         "window": {
           "visible": true
@@ -42,12 +25,9 @@
     }
   },
   "NetworkTables Info": {
-    "Clients": {
-      "open": true
-    },
-    "Server": {
-      "open": true
-    },
+    "visible": true
+  },
+  "NetworkTables Log": {
     "visible": true
   },
   "NetworkTables Settings": {

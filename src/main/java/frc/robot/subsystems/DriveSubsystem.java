@@ -79,7 +79,7 @@ public static double kTurnToleranceDeg;
   // Odometry class for tracking robot pose
   SwerveDriveOdometry m_odometry = new SwerveDriveOdometry(
       DriveConstants.kDriveKinematics,
-      Rotation2d.fromDegrees(m_gyro.getAngle()),
+      Rotation2d.fromDegrees(getHeading()),
       new SwerveModulePosition[] {
           m_frontLeft.getPosition(),
           m_frontRight.getPosition(),
@@ -89,6 +89,8 @@ public static double kTurnToleranceDeg;
 
   /** Creates a new DriveSubsystem. */
   public DriveSubsystem() {
+    final double kWheelBase = 26.5; 
+    double radius = Units.inchesToMeters((kWheelBase/2) * Math.sqrt(2)); 
          // Configure AutoBuilder last
         AutoBuilder.configureHolonomic(
                 this::getPose, // Robot pose supplier
@@ -96,10 +98,10 @@ public static double kTurnToleranceDeg;
                 this::getSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
                 this::driveRobotRelative, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
                 new HolonomicPathFollowerConfig( // HolonomicPathFollowerConfig, this should likely live in your Constants class
-                        new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
-                        new PIDConstants(5.0, 0.0, 0.0), // Rotation PID constants
-                        4.5, // Max module speed, in m/s
-                        0.4, // Drive base radius in meters. Distance from robot center to furthest module.
+                        new PIDConstants(1.0, 0.0, 0.0), // Translation PID constants
+                        new PIDConstants(1.0, 0.0, 0.0), // Rotation PID constants
+                        2, // Max module speed, in m/s
+                        radius, // Drive base radius in meters. Distance from robot center to furthest module.
                         new ReplanningConfig() // Default path replanning config. See the API for the options here
                 ),
                 //TODO edit constants above
@@ -137,7 +139,7 @@ public static double kTurnToleranceDeg;
 
   @Override
   public void periodic() {
-    double gyroAngle = m_gyro.getAngle(); 
+    double gyroAngle = getHeading(); 
     double gyroYaw = m_gyro.getYaw().getValueAsDouble(); 
 
     // Update the odometry in the periodic block
@@ -153,6 +155,9 @@ public static double kTurnToleranceDeg;
 
       SmartDashboard.putNumber("gyroAngle:", gyroAngle);
       SmartDashboard.putNumber("gyroYaw:", gyroYaw);
+      SmartDashboard.putNumber("Odometry.x:" , m_odometry.getPoseMeters().getX());
+      SmartDashboard.putNumber("Odometry.y:" , m_odometry.getPoseMeters().getY());
+  
   }
 
   /**
@@ -171,7 +176,7 @@ public static double kTurnToleranceDeg;
    */
   public void resetOdometry(Pose2d pose) {
     m_odometry.resetPosition(
-        Rotation2d.fromDegrees(m_gyro.getAngle()),
+        Rotation2d.fromDegrees(getHeading()),
         new SwerveModulePosition[] {
             m_frontLeft.getPosition(),
             m_frontRight.getPosition(),
@@ -251,7 +256,7 @@ public static double kTurnToleranceDeg;
 
     var swerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(
         fieldRelative
-            ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeedDelivered, ySpeedDelivered, rotDelivered, Rotation2d.fromDegrees(m_gyro.getAngle()))
+            ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeedDelivered, ySpeedDelivered, rotDelivered, Rotation2d.fromDegrees(getHeading()))
             : new ChassisSpeeds(xSpeedDelivered, ySpeedDelivered, rotDelivered));
     SwerveDriveKinematics.desaturateWheelSpeeds(
         swerveModuleStates, DriveConstants.kMaxSpeedMetersPerSecond);
@@ -313,7 +318,7 @@ public static double kTurnToleranceDeg;
    * @return the robot's heading in degrees, from -180 to 180
    */
   public double getHeading() {
-    return Rotation2d.fromDegrees(m_gyro.getAngle()).getDegrees();
+    return -m_gyro.getAngle();
   }
 
   /**
