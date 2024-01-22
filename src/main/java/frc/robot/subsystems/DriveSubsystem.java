@@ -7,13 +7,20 @@ package frc.robot.subsystems;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+// import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.math.trajectory.Trajectory; 
 import edu.wpi.first.util.WPIUtilJNI;
 import edu.wpi.first.wpilibj.DriverStation;
+// import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
@@ -23,6 +30,9 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
+
+// import java.util.List;
+
 import com.ctre.phoenix6.hardware.Pigeon2;
 
 public class DriveSubsystem extends SubsystemBase {
@@ -62,6 +72,9 @@ public static double kTurnToleranceDeg;
   private SlewRateLimiter m_magLimiter = new SlewRateLimiter(DriveConstants.kMagnitudeSlewRate);
   private SlewRateLimiter m_rotLimiter = new SlewRateLimiter(DriveConstants.kRotationalSlewRate);
   private double m_prevTime = WPIUtilJNI.now() * 1e-6;
+
+  private final Field2d m_field = new Field2d();
+  // private final Trajectory m_trajectory; 
 
   // Odometry class for tracking robot pose
   SwerveDriveOdometry m_odometry = new SwerveDriveOdometry(
@@ -103,6 +116,23 @@ public static double kTurnToleranceDeg;
                 },
                 this // Reference to this subsystem to set requirements
         );
+        
+         // Create the trajectory to follow in autonomous. It is best to initialize
+    // trajectories here to avoid wasting time in autonomous.
+    // m_trajectory =
+    //     TrajectoryGenerator.generateTrajectory(
+    //         new Pose2d(0, 0, Rotation2d.fromDegrees(0)),
+    //         List.of(new Translation2d(1, 1), new Translation2d(2, -1)),
+    //         new Pose2d(3, 0, Rotation2d.fromDegrees(0)),
+    //         new TrajectoryConfig(Units.feetToMeters(3.0), Units.feetToMeters(3.0)));
+
+    // Do this in either robot or subsystem init
+    SmartDashboard.putData("Field", m_field);
+    // Push the trajectory to Field2d.
+    // m_field.getObject("traj").setTrajectory(m_trajectory);
+
+
+    // Do this in either robot periodic or subsystem periodic
   }
 
   @Override
@@ -119,6 +149,7 @@ public static double kTurnToleranceDeg;
             m_rearLeft.getPosition(),
             m_rearRight.getPosition()
         });
+        m_field.setRobotPose(m_odometry.getPoseMeters());
 
       SmartDashboard.putNumber("gyroAngle:", gyroAngle);
       SmartDashboard.putNumber("gyroYaw:", gyroYaw);

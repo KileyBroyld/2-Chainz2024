@@ -76,17 +76,10 @@ public class RobotContainer {
             () -> m_robotDrive.setX(),
             m_robotDrive));
   }
-  public Command getAutonomousCommand() {
-        // Load the path you want to follow using its name in the GUI
-        PathPlannerPath path = PathPlannerPath.fromPathFile("Copy of Example Path");
-
-        // Create a path following command using AutoBuilder. This will also trigger event markers.
-        return AutoBuilder.followPath(path);
-    }
-  /**
-   * Use this to pass the autonomous command to the main {@link Robot} class.
-   *
-   * @return the command to run in autonomous
+  
+  //  * Use this to pass the autonomous command to the main {@link Robot} class.
+  //  *
+  //  * @return the command to run in autonomous
    
   public Command getAutonomousCommand() {
     // Create config for trajectory
@@ -122,11 +115,15 @@ public class RobotContainer {
         m_robotDrive::setModuleStates,
         m_robotDrive);
 
-    // Reset odometry to the starting pose of the trajectory.
-    m_robotDrive.resetOdometry(exampleTrajectory.getInitialPose());
+        PathPlannerPath path = PathPlannerPath.fromPathFile("Copy of Example Path");
+
+        // Reset odometry to the starting pose of the trajectory.
+         m_robotDrive.resetOdometry(exampleTrajectory.getInitialPose());
+
+        // Create a path following command using AutoBuilder. This will also trigger event markers.
+        return AutoBuilder.followPath(path);
 
     // Run path following command, then stop at the end.
-    return swerveControllerCommand.andThen(() -> m_robotDrive.drive(0, 0, 0, false, false));
-  } 
-  */
+    } 
+
 }
