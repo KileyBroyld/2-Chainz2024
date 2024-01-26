@@ -98,7 +98,7 @@ public class RobotContainer {
     // An example trajectory to follow. All units in meters.
     Trajectory exampleTrajectory = TrajectoryGenerator.generateTrajectory(
         // Start at the origin facing the +X direction
-        new Pose2d(0, 0, Rotation2d.fromDegrees(90)),
+        new Pose2d(0, 2, Rotation2d.fromDegrees(0)),
         // Pass through these two interior waypoints, making an 's' curve path
         List.of(new Translation2d(1, 1), new Translation2d(2, -1)),
         // End 3 meters straight ahead of where we started, facing forward
@@ -122,9 +122,9 @@ public class RobotContainer {
         m_robotDrive);
 
         PathPlannerPath path = PathPlannerPath.fromPathFile("Copy of Example Path");
-
+        Pose2d initialpose = new Pose2d(0, 1, Rotation2d.fromDegrees(0)); 
         // Reset odometry to the starting pose of the trajectory.
-         m_robotDrive.resetOdometry(exampleTrajectory.getInitialPose());
+         m_robotDrive.resetOdometry(initialpose);
 
         // Create a path following command using AutoBuilder. This will also trigger event markers.
         return AutoBuilder.followPath(path);
