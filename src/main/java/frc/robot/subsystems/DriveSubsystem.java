@@ -89,16 +89,17 @@ public static double kTurnToleranceDeg;
 
   /** Creates a new DriveSubsystem. */
   public DriveSubsystem() {
-    final double kWheelBase = 26.5; 
+    final double kWheelBase = 22.5; 
     double radius = Units.inchesToMeters((kWheelBase/2) * Math.sqrt(2)); 
          // Configure AutoBuilder last
+
         AutoBuilder.configureHolonomic(
                 this::getPose, // Robot pose supplier
                 this::resetOdometry, // Method to reset odometry (will be called if your auto has a starting pose)
                 this::getSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
                 this::driveRobotRelative, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
                 new HolonomicPathFollowerConfig( // HolonomicPathFollowerConfig, this should likely live in your Constants class
-                        new PIDConstants(1.0, 0.0, 0.0), // Translation PID constants
+                        new PIDConstants(5.0, 1.0, 0.5), // Translation PID constants
                         new PIDConstants(1.0, 0.0, 0.0), // Rotation PID constants
                         2, // Max module speed, in m/s
                         radius, // Drive base radius in meters. Distance from robot center to furthest module.

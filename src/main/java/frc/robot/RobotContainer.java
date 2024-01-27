@@ -14,7 +14,7 @@ import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.PS4Controller.Button;
+import edu.wpi.first.wpilibj.XboxController.Button;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OIConstants;
@@ -72,14 +72,19 @@ public class RobotContainer {
    * {@link JoystickButton}.
    */
   private void configureButtonBindings() {
-    new JoystickButton(m_driverController, Button.kR1.value)
+    new JoystickButton(m_driverController, Button.kRightBumper.value)
         .whileTrue(new RunCommand(
             () -> m_robotDrive.setX(),
             m_robotDrive));
 
-    new JoystickButton(m_driverController, Button.kR3.value)
+    new JoystickButton(m_driverController, Button.kRightStick.value)
         .onTrue(new InstantCommand(
             () -> m_robotDrive.resetOdometry(m_robotDrive.getPose())
+        )); 
+
+    new JoystickButton(m_driverController, Button.kStart.value)
+        .onTrue(new InstantCommand(
+            () -> m_robotDrive.zeroHeading()
         )); 
   }
   
@@ -87,7 +92,7 @@ public class RobotContainer {
   //  *
   //  * @return the command to run in autonomous
    
-  public Command getAutonomousCommand() {
+  public Command getAutonomousCommand() { //TODO use pathplanner auto 
     // Create config for trajectory
     TrajectoryConfig config = new TrajectoryConfig(
          AutoConstants.kMaxSpeedMetersPerSecond,
@@ -109,17 +114,20 @@ public class RobotContainer {
         AutoConstants.kPThetaController, 0, 0, AutoConstants.kThetaControllerConstraints);
     thetaController.enableContinuousInput(-Math.PI, Math.PI);
 
-    SwerveControllerCommand swerveControllerCommand = new SwerveControllerCommand(
-        exampleTrajectory,
-        m_robotDrive::getPose, // Functional interface to feed supplier
-        DriveConstants.kDriveKinematics,
+    // SwerveControllerCommand swerveControllerCommand = new SwerveControllerCommand(
+    //     exampleTrajectory,
+    //     m_robotDrive::getPose, // Functional interface to feed supplier
+    //     DriveConstants.kDriveKinematics,
 
-        // Position controllers
-        new PIDController(AutoConstants.kPXController, 0, 0),
-        new PIDController(AutoConstants.kPYController, 0, 0),
-        thetaController,
-        m_robotDrive::setModuleStates,
-        m_robotDrive);
+    //     // Position controllers
+    //     new PIDController(AutoConstants.kPXController, 0, 0),
+    //     new PIDController(AutoConstants.kPYController, 0, 0),
+    //     thetaController,
+    //     m_robotDrive::setModuleStates,
+    //     m_robotDrive);
+
+        // PathPlannerPath path = PathPlannerPath.fromPathFile("Example Path");
+        // Pose2d initialpose = new Pose2d(2, 7, Rotation2d.fromDegrees(0)); 
 
         PathPlannerPath path = PathPlannerPath.fromPathFile("Copy of Example Path");
         Pose2d initialpose = new Pose2d(0, 1, Rotation2d.fromDegrees(0)); 
@@ -127,6 +135,7 @@ public class RobotContainer {
          m_robotDrive.resetOdometry(initialpose);
 
         // Create a path following command using AutoBuilder. This will also trigger event markers.
+        
         return AutoBuilder.followPath(path);
 
     // Run path following command, then stop at the end.
