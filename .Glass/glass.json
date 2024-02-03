@@ -3,11 +3,24 @@
     "retained": {
       "SmartDashboard": {
         "open": true
+      },
+      "limelight": {
+        "double[]##v_/limelight/botpose": {
+          "open": true
+        },
+        "open": true
       }
     },
     "transitory": {
+      "LiveWindow": {
+        ".status": {
+          "open": true
+        }
+      },
       "Shuffleboard": {
-        "open": true
+        ".recording": {
+          "open": true
+        }
       },
       "SmartDashboard": {
         "open": true
@@ -38,7 +51,18 @@
     }
   },
   "NetworkTables Info": {
-    "visible": true
+    "Clients": {
+      "open": true
+    },
+    "Dashboard@1": {
+      "Publishers": {
+        "open": true
+      },
+      "Subscribers": {
+        "open": true
+      },
+      "open": true
+    }
   },
   "NetworkTables Log": {
     "visible": true
