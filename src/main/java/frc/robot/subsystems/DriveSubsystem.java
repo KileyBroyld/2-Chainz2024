@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems;
 
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -16,6 +18,9 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.math.trajectory.Trajectory; 
 import edu.wpi.first.util.WPIUtilJNI;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -73,6 +78,11 @@ public static double kTurnToleranceDeg;
   private SlewRateLimiter m_rotLimiter = new SlewRateLimiter(DriveConstants.kRotationalSlewRate);
   private double m_prevTime = WPIUtilJNI.now() * 1e-6;
 
+  // AprilTag readings from network table
+  private double x = 0;
+  private double y = 0;
+  private double a = 0;
+
   private final Field2d m_field = new Field2d();
   // private final Trajectory m_trajectory; 
 
@@ -87,10 +97,26 @@ public static double kTurnToleranceDeg;
           m_rearRight.getPosition()
       });
 
+  private double id;
+
+  private double prev_x;
+  private double prev_y;
+  private double prev_id; 
+  private double prev_a;
+
+  private int invalidCount = 99; //initialized to value that represents invalid 
+
+  private final PIDController m_rotVisionPidController = new PIDController(0.020, 0.0, 0.002);
+  private final PIDController m_yVisionPidController = new PIDController(0.040, 0.0, 0.005);
+  private final PIDController m_xVisionPidController = new PIDController(0.040, 0.0, 0.0);
+
   /** Creates a new DriveSubsystem. */
   public DriveSubsystem() {
     final double kWheelBase = 22.5; 
     double radius = Units.inchesToMeters((kWheelBase/2) * Math.sqrt(2)); 
+
+    m_rotVisionPidController.enableContinuousInput(-180, 180);
+
          // Configure AutoBuilder last
 
         AutoBuilder.configureHolonomic(
@@ -138,6 +164,26 @@ public static double kTurnToleranceDeg;
     // Do this in either robot periodic or subsystem periodic
   }
 
+  public boolean visionDriveAligned(double desiredId, double desiredY, double rotVisionSetpoint) {
+    boolean retValue = true; //true = at desired location
+    updateAprilTagInfo(desiredId);
+    double rotSpeed = MathUtil.clamp(m_rotVisionPidController.calculate(getHeadingMod180(), rotVisionSetpoint), 
+      -DriveConstants.maxVisionRotSpeed, DriveConstants.maxVisionRotSpeed);
+    double ySpeed = MathUtil.clamp(m_yVisionPidController.calculate(x, 0),
+    -DriveConstants.maxVisionStrafeSpeed, DriveConstants.maxVisionStrafeSpeed);
+    double xSpeed = MathUtil.clamp(m_xVisionPidController.calculate(-y, desiredY),
+    -DriveConstants.maxVisionStrafeSpeed, DriveConstants.maxVisionStrafeSpeed);
+    if (m_yVisionPidController.atSetpoint()){
+    // if (m_rotVisionPidController.atSetpoint() && m_xVisionPidController.atSetpoint() && m_yVisionPidController.atSetpoint()){
+      drive(0, 0, 0, false, true); 
+    }
+    else { 
+      drive(0, ySpeed, 0, false, true);  
+      retValue = false; 
+    }
+    return retValue; 
+  }
+
   @Override
   public void periodic() {
     double gyroAngle = getHeading(); 
@@ -158,9 +204,42 @@ public static double kTurnToleranceDeg;
       SmartDashboard.putNumber("gyroYaw:", gyroYaw);
       SmartDashboard.putNumber("Odometry.x:" , m_odometry.getPoseMeters().getX());
       SmartDashboard.putNumber("Odometry.y:" , m_odometry.getPoseMeters().getY());
-  
+
+      updateAprilTagInfo(5.0);
   }
 
+  public void updateAprilTagInfo(double desiredId) {
+
+    NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
+    NetworkTableEntry tx = table.getEntry("tx");
+    NetworkTableEntry ty = table.getEntry("ty");
+    NetworkTableEntry ta = table.getEntry("ta");
+    NetworkTableEntry tid = table.getEntry("tid");
+
+
+    //read values periodically
+    x = tx.getDouble(0.0);
+    y = ty.getDouble(0.0);
+    a = ta.getDouble(0.0);
+    id = tid.getDouble(0.0);
+    
+    if (id == desiredId) {
+      prev_x = x; 
+      prev_y = y; 
+      prev_a = a; 
+      prev_id = id; 
+      invalidCount = 0; 
+    } 
+    else { 
+      invalidCount++; 
+    }
+
+    SmartDashboard.putNumber("AprilTag x", x); 
+    SmartDashboard.putNumber("AprilTag y", y); 
+    SmartDashboard.putNumber("AprilTag a", a); 
+    SmartDashboard.putNumber("AprilTag Id", id); 
+    SmartDashboard.putNumber("Invalid Count", invalidCount); 
+  }
   /**
    * Returns the currently-estimated pose of the robot.
    *
@@ -320,6 +399,15 @@ public static double kTurnToleranceDeg;
    */
   public double getHeading() {
     return -m_gyro.getAngle();
+  }
+
+  /**
+   * Returns the heading of the robot.
+   *
+   * @return the robot's heading in degrees, from -180 to 180
+   */
+  public double getHeadingMod180() {
+    return MathUtil.inputModulus(-m_gyro.getAngle(), -180, 180);
   }
 
   /**

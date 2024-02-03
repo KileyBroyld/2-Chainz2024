@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj.XboxController.Button;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OIConstants;
+import frc.robot.commands.VisionDriveAligned;
 import frc.robot.subsystems.DriveSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -88,11 +89,7 @@ public class RobotContainer {
         )); 
   }
   
-  //  * Use this to pass the autonomous command to the main {@link Robot} class.
-  //  *
-  //  * @return the command to run in autonomous
-   
-  public Command getAutonomousCommand() { //TODO use pathplanner auto 
+  public Command getPathplannerCommand(){
     // Create config for trajectory
     TrajectoryConfig config = new TrajectoryConfig(
          AutoConstants.kMaxSpeedMetersPerSecond,
@@ -138,7 +135,14 @@ public class RobotContainer {
         
         return AutoBuilder.followPath(path);
 
-    // Run path following command, then stop at the end.
-    } 
+  }
+  //  * Use this to pass the autonomous command to the main {@link Robot} class.
+  //  *
+  //  * @return the command to run in autonomous
+   
+  public Command getAutonomousCommand() { //TODO use pathplanner auto 
+    
+    return new VisionDriveAligned(5, 0, 0, m_robotDrive); 
 
-}
+    }
+}   
