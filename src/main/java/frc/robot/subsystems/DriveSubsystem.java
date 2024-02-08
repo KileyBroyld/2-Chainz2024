@@ -109,8 +109,9 @@ public static double kTurnToleranceDeg;
 
   //TODO Add tolerances to PID Controllers
   private final PIDController m_rotVisionPidController = new PIDController(0.020, 0.0, 0.002);
-  private final PIDController m_yVisionPidController = new PIDController(0.040, 0.0, 0.005);
-  private final PIDController m_xVisionPidController = new PIDController(0.040, 0.0, 0.005);
+  private final PIDController m_yVisionPidController = new PIDController(0.033, 0.0, 0.005);
+  private final PIDController m_xVisionPidController = new PIDController(0.033, 0.0, 0.005);
+  
 
   /** Creates a new DriveSubsystem. */
   public DriveSubsystem() {
@@ -118,7 +119,9 @@ public static double kTurnToleranceDeg;
     double radius = Units.inchesToMeters((kWheelBase/2) * Math.sqrt(2)); 
 
     m_rotVisionPidController.enableContinuousInput(-180, 180);
-
+    m_rotVisionPidController.setTolerance(0.5);
+    m_yVisionPidController.setTolerance(0.5);
+    m_xVisionPidController.setTolerance(0.5);
          // Configure AutoBuilder last
 
         AutoBuilder.configureHolonomic(
